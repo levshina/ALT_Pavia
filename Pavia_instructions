@@ -1,0 +1,22 @@
+1. Please install the following software:
+
+- R from https://cran.r-project.org/
+- RStudio (free version) from https://www.rstudio.com/products/rstudio/download/
+- Useful, but not absolutely necessary: Notepad++ from https://notepad-plus-plus.org/download/v7.7.1.html
+
+2. After you have installed RStudio, please install the package udpipe and download several models, to save time:
+
+- Open RStudio, go to the Packages tab (bottom right panel), click on "Install"" and type udpipe. Press "Install". The add-on package udpipe will be installed.
+- Next, run the following commands in the Console (bottom left panel):
+model_eng <- udpipe_download_model(language = "english")
+model_fin <- udpipe_download_model(language = "finnish")
+model_ita <- udpipe_download_model(language = "italian")
+
+(and possibly other languages that interest you)
+
+Also, please install the add-on package readr using the same method.
+
+3. Save somewhere locally all text files in the archive (and please remember the directory).
+
+4. Please download the Universal Dependencies corpora v2.4 from 
+https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-2988 and extract the files somewhere. Only the treebanks will be needed (no documentation and no tools).
