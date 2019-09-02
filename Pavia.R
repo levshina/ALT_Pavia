@@ -17,10 +17,10 @@ library(udpipe)
 ###Task 1. Annotation of English text.
 #First, we should load the English model.
 
-#If you have already loaded the English model, please ignore the hashtagged lines of code.
-#If you haven't, remove the hashtag and run this command.
-
+#If you have already loaded the English model, please ignore the line of code below.
+#If you haven't, remove the hashtag and run this command:
 #model_eng <- udpipe_download_model(language = "english")
+
 ud_english <- udpipe_load_model(model_eng$file_model)
 
 #We begin with a simple sentence, creating a character vector with the sentence. 
@@ -55,10 +55,7 @@ head(text)
 x <- udpipe(text, object = ud_english)
 head(x)
 
-#How to save the output? save output as a text file with tabs as separators between the columns
-#as a simple data frame
-write.table(x, file = "UDHR_ud.txt", sep = "\t", quote = F, row.names = F)
-#as a conllu file
+#How to save the output as a conllu file:
 write.table(as_conllu(x), file = "UDHR_ud.conllu", sep = "\t", quote = F, row.names = F)
 
 
@@ -118,6 +115,9 @@ dep_freq
 #sorted in descending order
 sort(dep_freq, decreasing = TRUE)
 
+#Exercise 4: take a small text in English, read it in R, parse it and obtain the top 20 frequency lists of tokens, lemmas, parts of speech and syntactic dependencies.
+#Note: use x1 or another name instead of x in your code. Otherwise, the parsed English text will be overwritten.
+
 #Which and how many active and passive subjects are there?
 x$lemma[x$dep_rel == "nsubj"]
 length(which(x$dep_rel == "nsubj"))
@@ -128,7 +128,7 @@ length(which(x$dep_rel == "nsubj:pass"))
 length(which(x$dep_rel == "nsubj"&x$upos == "NOUN"))
 length(which(x$dep_rel == "nsubj"&x$upos == "PRON"))
 
-#Exercise 4: how many passive subjects are nouns, and how many of them are pronouns?
+#Exercise 5: how many passive subjects are nouns, and how many of them are pronouns?
 
 #Let's extract the lemmas of all objects
 x$lemma[x$dep_rel == "obj"]
@@ -136,12 +136,13 @@ x$lemma[x$dep_rel == "obj"]
 x$lemma[x$dep_rel == "obj"&x$upos == "PRON"]
 #Lemmas of all objects that are common nouns:
 x$lemma[x$dep_rel == "obj"&x$upos == "NOUN"]
-#Lemmas of all objects that are common or proper nouns:
-x$lemma[x$dep_rel == "obj"&x$upos %in% c("NOUN", "PROPN")]
 #How many such objects are there?
-length(which(x$dep_rel == "obj"&x$upos %in% c("NOUN", "PROPN")))
+length(which(x$dep_rel == "obj"&x$upos == "NOUN"))
 
-#Which typological tendency do these results confirm?
+#Which cross-linguistic tendency do these results confirm?
+
+#Lemmas of all objects that are common OR proper nouns:
+x$lemma[x$dep_rel == "obj"&x$upos %in% c("NOUN", "PROPN")]
 
 ##Task 3. Extraction of information about word order from the English data.
 
@@ -172,8 +173,15 @@ ud_german <- udpipe_load_model(model_ger$file_model)
 
 text_ger <- "Du hast mich gefragt."
 x <- udpipe(text_ger, object = ud_german)
+x
 
-#Exercise 5: parse a sentence in another language and interpret the results.
+#Exercise 6: parse a sentence in another language and interpret the output. Are there any errors?
+#to see the available models, type:
+
+?udpipe_download_model
+
+#to choose between multiple models for the same language: 
+#see https://universaldependencies.org/
 
 ########################################
 ###PART II: Order of head and amod in UD corpora
@@ -181,7 +189,7 @@ x <- udpipe(text_ger, object = ud_german)
 #select UD_English-EWT/en_ewt-ud-train.conllu from UD, version 2.4
 eng_ud <- udpipe_read_conllu(file = file.choose())
 nrow(eng_ud) #number of tokens (incl. punctuation)
-colnames(eng_ud)
+colnames(eng_ud) #column names
 
 #important: transform token_id and head_token_id into numeric vectors
 eng_ud$token_id <- as.numeric(eng_ud$token_id)
@@ -197,16 +205,16 @@ eng_ud$token[eng_ud$dep_rel == "amod"&eng_ud$upos == "ADJ"&eng_ud$token_id > eng
 length(which(eng_ud$dep_rel == "amod"&eng_ud$upos == "ADJ"&eng_ud$token_id > eng_ud$head_token_id))
 #265
 
-#Exercise 6: examine the contexts of individual adjectives, e.g. "fantastic".
+#Exercise 7: examine the contexts of individual adjectives, e.g. "fantastic".
 #What kind of constructions can you identify?
 eng_ud$sentence[eng_ud$dep_rel == "amod"&eng_ud$upos == "ADJ"&eng_ud$token_id > eng_ud$head_token_id&eng_ud$token == "fantastic"]
 
 #Compute the proportions of amod - head and head - amod
 prop.table(c(8084, 265))
 #[1] 0.96825967 0.03174033
+#Create a numeric vector with one element: proportion of amod - head
 eng_amod_head <- prop.table(c(8084, 265))[1]
 eng_amod_head
-
 
 #The same for Italian ISDT (train)
 ita_ud <- udpipe_read_conllu(file = file.choose())
@@ -229,7 +237,7 @@ ita_ud$token[ita_ud$dep_rel == "amod"&ita_ud$upos == "ADJ"&ita_ud$token_id > ita
 length(which(ita_ud$dep_rel == "amod"&ita_ud$upos == "ADJ"&ita_ud$token_id > ita_ud$head_token_id))
 #10761
 
-#Exercise 7: examine the contexts of individual adjectives, e.g. "vero".
+#Exercise 8: examine the contexts of individual adjectives, e.g. "vero".
 #What kind of constructions can you identify?
 ita_ud$sentence[ita_ud$dep_rel == "amod"&ita_ud$upos == "ADJ"&ita_ud$token_id < ita_ud$head_token_id&ita_ud$token == "vero"]
 
@@ -239,29 +247,33 @@ prop.table(c(4665, 10761))
 ita_amod_head <- prop.table(c(4665, 10761))[1]
 ita_amod_head
 
-#Exercise 8: perform the same kind of analysis for another language. Are your expectations confirmed?
+#Exercise 9: perform the same kind of analysis for another language. Are your expectations confirmed?
 
 #After we have data about many languages, we can aggregate 
-#and visualize the proportions.
+#and visualize the proportions, using the code below
 
-amod_head <- c(eng_amod_head, ita_amod_head) #... and other languages
-names(amod_head) <- c("English", "Italian")
+amod_head <- c(eng_amod_head, ita_amod_head) #add other languages!
+names(amod_head) <- c("English", "Italian") #add other names of languages!
 dotchart(sort(amod_head), xlim = c(0, 1), xlab = "Proportion of amod first")
 
 ########################################
 ###PART III: Greenberg's Universal 25 in UD corpora
 #"If the pronominal object follows the verb, so does the nominal object."
 
+#First, we look for objects that are common or proper nouns, and which follow the head:
 vo_nouns_eng <- length(which(eng_ud$dep_rel == "obj"&eng_ud$upos %in% c("NOUN", "PROPN")&eng_ud$token_id > eng_ud$head_token_id))
 vo_nouns_eng
 #7395
+#the same, but the objects precede the head:
 ov_nouns_eng <- length(which(eng_ud$dep_rel == "obj"&eng_ud$upos %in% c("NOUN", "PROPN")&eng_ud$token_id < eng_ud$head_token_id))
 ov_nouns_eng
 #45
 
+#Now the same for pronominal objects following the head:
 vo_pronouns_eng <- length(which(eng_ud$dep_rel == "obj"&eng_ud$upos == "PRON"&eng_ud$token_id > eng_ud$head_token_id))
 vo_pronouns_eng
 #2042
+#And finally pronominal objects preceding the head:
 ov_pronouns_eng <- length(which(eng_ud$dep_rel == "obj"&eng_ud$upos == "PRON"&eng_ud$token_id < eng_ud$head_token_id))
 ov_pronouns_eng
 #318
@@ -273,9 +285,8 @@ eng_vo
 #  vo_nouns    ov_nouns vo_pronouns ov_pronouns 
 #   7395          45        2042         318 
 
-#Exercise 9: obtain the same frequencies for two or more other languages
+#Let's repeat that for Yoruba
 
-#e.g. Yoruba
 yoruba <- udpipe_read_conllu(file = file.choose())
 head(yoruba)
 
@@ -299,18 +310,20 @@ ov_pronouns_yor
 yor_vo <- c(vo_nouns_yor, ov_nouns_yor, vo_pronouns_yor, ov_pronouns_yor)
 names(yor_vo) <- c("vo_nouns","ov_nouns", "vo_pronouns", "ov_pronouns")
 
+#Exercise 10: obtain the same frequencies for two or more other languages
+
 #... after we have multiple languages, we can put everything together:
-vo <- rbind(eng_vo, ita_vo, fin_vo) #add more languages...
+vo <- rbind(eng_vo, yor_vo) #add more languages...
 vo <- as.data.frame(vo)
 
 ##compute and visualize the proportions of Noun + V and Pron + V:
 vo$ov_nouns_prop <- vo$ov_nouns/(vo$vo_nouns + vo$ov_nouns)
 vo$ov_pronouns_prop <- vo$ov_pronouns/(vo$vo_pronouns + vo$ov_pronouns)
-vo$language <- c("eng", "ita", "fin")
+vo$language <- c("eng", "yor") #Add more language names!
 plot(vo$ov_nouns_prop, vo$ov_pronouns_prop, ylim = c(0, 1), xlim = c(0, 1), type = "n")
 text(vo$ov_nouns_prop, vo$ov_pronouns_prop, labels = vo$language)
 
-#How can you reformulate the universal?
+#Now let's stop and think: How can we reformulate the universal?
 
 ########################################
 ###PART IV: Greenberg's Universal 25 in film subtitles
@@ -435,10 +448,6 @@ ov_pronouns_fin
 fin_vo <- c(vo_nouns_fin, ov_nouns_fin, vo_pronouns_fin, ov_pronouns_fin)
 names(fin_vo) <- c("vo_nouns","ov_nouns", "vo_pronouns", "ov_pronouns")
 
-#Exercise 10: check another language
+#Exercise 11: check another language and obtain the frequencies. Share your results with the others.
 
-#to see the available models: 
-
-?udpipe_download_model
-#to choose between multiple models for the same language: 
-#see https://universaldependencies.org/
+#Exercise 12: visualize the frequencies in a scatter plot, as shown above.
